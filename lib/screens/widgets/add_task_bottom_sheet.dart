@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:todo_c8_str/models/task_model.dart';
+import 'package:todo_c8_str/shared/network/firebase/firebase_functions.dart';
 
 class AddTaskBottomSheet extends StatefulWidget {
   const AddTaskBottomSheet({Key? key}) : super(key: key);
@@ -9,6 +11,10 @@ class AddTaskBottomSheet extends StatefulWidget {
 
 class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   var formKey = GlobalKey<FormState>();
+
+  var titleController = TextEditingController();
+  var descController = TextEditingController();
+  DateTime selectedDate = DateUtils.dateOnly(DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +37,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
               height: 15,
             ),
             TextFormField(
+              controller: titleController,
               autofocus: false,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (value) {
@@ -46,16 +53,17 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide:
-                          BorderSide(color: Theme.of(context).primaryColor)),
+                      BorderSide(color: Theme.of(context).primaryColor)),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide:
-                          BorderSide(color: Theme.of(context).primaryColor))),
+                      BorderSide(color: Theme.of(context).primaryColor))),
             ),
             SizedBox(
               height: 15,
             ),
             TextFormField(
+              controller: descController,
               maxLines: 3,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -68,11 +76,11 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide:
-                          BorderSide(color: Theme.of(context).primaryColor)),
+                      BorderSide(color: Theme.of(context).primaryColor)),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide:
-                          BorderSide(color: Theme.of(context).primaryColor))),
+                      BorderSide(color: Theme.of(context).primaryColor))),
             ),
             SizedBox(
               height: 15,
@@ -96,7 +104,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   chooseDate();
                 },
                 child: Text(
-                  "12/12/2021",
+                  selectedDate.toString().substring(0, 10),
                   style: Theme.of(context).textTheme.bodySmall,
                 )),
             SizedBox(
@@ -105,7 +113,14 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
             ElevatedButton(
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
-                    print("task added");
+                    TaskModel task = TaskModel(
+                        title: titleController.text,
+                        description: descController.text,
+                        date: selectedDate.millisecondsSinceEpoch,
+                        status: false);
+                    FirebaseFunctions.addTaskToFirestore(task).then((value) {
+                      Navigator.pop(context);
+                    });
                   }
                 },
                 child: Text("Add Task"))
@@ -115,11 +130,16 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
     );
   }
 
-  void chooseDate() {
-    showDatePicker(
+  void chooseDate() async {
+    DateTime? chosenDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: selectedDate,
         firstDate: DateTime.now(),
         lastDate: DateTime.now().add(Duration(days: 365)));
+
+    if (chosenDate != null) {
+      selectedDate = DateUtils.dateOnly(chosenDate);
+      setState(() {});
+    }
   }
 }
