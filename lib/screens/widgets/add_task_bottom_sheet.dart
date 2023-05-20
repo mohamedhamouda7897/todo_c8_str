@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_c8_str/models/task_model.dart';
 import 'package:todo_c8_str/shared/network/firebase/firebase_functions.dart';
@@ -116,11 +117,11 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                     TaskModel task = TaskModel(
                         title: titleController.text,
                         description: descController.text,
+                        userId: FirebaseAuth.instance.currentUser!.uid,
                         date: selectedDate.millisecondsSinceEpoch,
                         status: false);
-                    FirebaseFunctions.addTaskToFirestore(task).then((value) {
-                      Navigator.pop(context);
-                    });
+                    FirebaseFunctions.addTaskToFirestore(task);
+                    Navigator.pop(context);
                   }
                 },
                 child: Text("Add Task"))

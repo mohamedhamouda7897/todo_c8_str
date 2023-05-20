@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_c8_str/screens/login.dart';
 import 'package:todo_c8_str/screens/settings.dart';
 import 'package:todo_c8_str/screens/widgets/add_task_bottom_sheet.dart';
 
+import '../providers/my_provider.dart';
 import '../screens/tasks.dart';
 
 class HomeLayout extends StatefulWidget {
@@ -16,13 +19,22 @@ class _HomeLayoutState extends State<HomeLayout> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<MyProvider>(context);
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
         title: Text(
-          "Todo List",
+          "Todo List ${provider.myUser?.name}",
           style: Theme.of(context).textTheme.bodyLarge,
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                provider.logout();
+                Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+              },
+              icon: Icon(Icons.logout))
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
